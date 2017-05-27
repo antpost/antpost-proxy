@@ -29,25 +29,10 @@ const allowCrossDomain = (req, res, next) => {
 app.use(allowCrossDomain);
 
 app.get('/', function (req, res) {
-	res.send("Success! Now let's us AntPost");
+	res.send("Success! Now let's use AntPost");
 });
 
 app.post('/fblogin', function (req, res) {
-	const options = {
-		method: req.body.method,
-		uri: req.body.api,
-		qs: req.body.data,
-		json: true
-	};
-
-	request(options).then(fbRes => {
-		res.status(200).json(fbRes);
-	}).catch(err => {
-		res.status(500).json(err);
-	});
-});
-
-app.post('/post', function (req, res) {
 	const options = {
 		method: 'POST',
 		uri: 'https://api.facebook.com/restserver.php',
@@ -62,6 +47,21 @@ app.post('/post', function (req, res) {
 	});
 });
 
+app.post('/post', function (req, res) {
+	const options = {
+		method: req.body.method,
+		uri: req.body.api,
+		qs: req.body.data,
+		json: true
+	};
+
+	request(options).then(fbRes => {
+		res.status(200).json(fbRes);
+	}).catch(err => {
+		res.status(500).json(err);
+	});
+});
+
 app.listen(3001, function () {
-  console.log("Success! Now let's us AntPost");
+  console.log("Success! Now let's use AntPost");
 });
