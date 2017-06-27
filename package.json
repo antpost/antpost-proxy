@@ -9,9 +9,10 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "body-parser": "^1.15.2",
     "express": "^4.15.3",
+    "phantom": "^4.0.4",
     "request": "^2.81.0",
-    "request-promise": "^4.2.1",
-    "body-parser": "^1.15.2"
+    "request-promise": "^4.2.1"
   }
 }
