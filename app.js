@@ -63,9 +63,18 @@ app.post('/post', function (req, res) {
 	});
 });
 
-app.get('/simulate', async (req, res) => {
-	const content = await simulate();
-	res.status(200).send(content);
+app.post('/simulate', (req, res) => {
+	const content = simulate(req.body).then((result) => {
+        res.status(200).json({
+            status: 0,
+			data: result
+        });
+	}).catch ((error) => {
+        res.status(200).json({
+        	status: 1,
+			data: error
+		});
+	});
 });
 
 app.listen(3001, function () {

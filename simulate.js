@@ -4,7 +4,8 @@
 
 const phantom = require('phantom');
 
-module.exports = () => {
+module.exports = (procedure) => {
+
     return new Promise(async (resolve, reject) => {
         const instance = await phantom.create(['--ignore-ssl-errors=yes', '--load-images=no'], {
             phantomPath: 'phantomjs.exe'
@@ -18,15 +19,16 @@ module.exports = () => {
         let currentUrl = '';
 
         await page.on("onLoadFinished", async function(status) {
-            console.log(`Load Finished ${status}`);
+            //console.log(`Load Finished ${status}`);
 
             if(step == 2) {
-                if(currentUrl.indexOf('mbasic.facebook.com/login/save-device')) {
-                    //console.log(page);
+                if(currentUrl.indexOf(procedure.completeRule.finalUrl) >= 0) {
                     let cookies = await page.cookies();
-                    resolve(JSON.stringify(cookies));
+                    //console.log(cookies);
+                    resolve(cookies);
                 } else {
-                    resolve("Login failed!");
+                    //console.log("Failed!");
+                    reject("Failed!");
                 }
 
                 setTimeout(async () => {
@@ -42,15 +44,29 @@ module.exports = () => {
             currentUrl = targetUrl;
         });
 
-        const status = await page.open('https://mbasic.facebook.com/');
+        const status = await page.open(procedure.requestAction.params.url);
 
         if(status === 'success') {
             step++;
-            await page.evaluate(function() {
-                document.querySelector("input[name='email']").value = "100016488426267";
-                document.querySelector("input[name='pass']").value = "bgbggb1";
-                document.querySelector("#login_form").submit();
-            });
+            await page.invokeMethod('evaluate', function(formActions) {
+                var actionType = {
+                    accessUrl: 1,
+                    input: 2,
+                    click: 3,
+                    submit: 4
+                };
+
+                formActions.forEach(function(actionStep) {
+                    switch (actionStep.action) {
+                        case actionType.input:
+                            document.querySelector(actionStep.params.selector).value = actionStep.params.value;
+                            break;
+                        case actionType.submit:
+                            document.querySelector(actionStep.params.selector).submit();
+                            break;
+                    }
+                });
+            }, procedure.formActions);
         }
 
     });
