@@ -4,6 +4,30 @@
 
 const phantom = require('phantom');
 
+/**
+ * add cookies to page
+ * @param page
+ * @param cookies
+ * @returns {*}
+ */
+const addCookies = (page, cookies) => {
+    if(!cookies) {
+        return Promise.resolve();
+    }
+
+    return new Promise(async (resolve, reject) => {
+        let allPromises = [];
+
+        cookies.forEach((cookie) => {
+            allPromises.push(page.addCookie(cookie));
+        });
+
+        Promise.all(allPromises).then(() => {
+            resolve();
+        })
+    });
+};
+
 module.exports = (procedure) => {
 
     return new Promise(async (resolve, reject) => {
@@ -32,6 +56,7 @@ module.exports = (procedure) => {
                 }
 
                 setTimeout(async () => {
+                    await page.render('capture.png');
                     await instance.exit();
                 }, 2000);
             }
@@ -44,7 +69,10 @@ module.exports = (procedure) => {
             currentUrl = targetUrl;
         });
 
+        await addCookies(page, procedure.requestAction.params.cookies);
+
         const status = await page.open(procedure.requestAction.params.url);
+        await page.render('post.png');
 
         if(status === 'success') {
             step++;
