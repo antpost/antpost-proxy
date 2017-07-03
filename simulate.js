@@ -48,15 +48,18 @@ module.exports = (procedure) => {
             if(step == 2) {
                 if(currentUrl.indexOf(procedure.completeRule.finalUrl) >= 0) {
                     let cookies = await page.cookies();
-                    //console.log(cookies);
-                    resolve(cookies);
+					const content = await page.property('content');
+                    resolve({
+						cookies: cookies,
+						content: content
+					});
                 } else {
                     //console.log("Failed!");
                     reject("Failed!");
                 }
 
                 setTimeout(async () => {
-                    await page.render('capture.png');
+                    //await page.render('capture.png');
                     await instance.exit();
                 }, 2000);
             }
@@ -76,25 +79,40 @@ module.exports = (procedure) => {
 
         if(status === 'success') {
             step++;
-            await page.invokeMethod('evaluate', function(formActions) {
+            var finished = await page.invokeMethod('evaluate', function(formActions) {
                 var actionType = {
                     accessUrl: 1,
                     input: 2,
                     click: 3,
                     submit: 4
                 };
+				
+				var ok = true;
 
                 formActions.forEach(function(actionStep) {
+					var selector = document.querySelector(actionStep.params.selector);
+					if(!selector) {
+						ok = false;
+						return;
+					}
+					
                     switch (actionStep.action) {
                         case actionType.input:
-                            document.querySelector(actionStep.params.selector).value = actionStep.params.value;
+                            selector.value = actionStep.params.value;
                             break;
                         case actionType.submit:
-                            document.querySelector(actionStep.params.selector).submit();
+                            selector.submit();
                             break;
                     }
                 });
+				
+				return ok;
             }, procedure.formActions);
+			
+			if(!finished) {
+				reject("Failed!");
+				await instance.exit();
+			}
         }
 
     });
