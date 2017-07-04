@@ -75,7 +75,7 @@ module.exports = (procedure) => {
         await addCookies(page, procedure.requestAction.params.cookies);
 
         const status = await page.open(procedure.requestAction.params.url);
-        await page.render('post.png');
+        //await page.render('post.png');
 
         if(status === 'success') {
             step++;
@@ -91,11 +91,6 @@ module.exports = (procedure) => {
 
                 formActions.forEach(function(actionStep) {
 					
-					// ignore empty input
-					if(!actionStep.params.value) {
-						return;
-					}
-					
 					var selector = document.querySelector(actionStep.params.selector);
 					if(!selector) {
 						ok = false;
@@ -104,7 +99,10 @@ module.exports = (procedure) => {
 					
                     switch (actionStep.action) {
                         case actionType.input:
-                            selector.value = actionStep.params.value;
+                            // ignore empty input
+                            if(actionStep.params.value) {
+                                selector.value = actionStep.params.value;
+                            }
                             break;
                         case actionType.submit:
                             selector.submit();
