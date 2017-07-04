@@ -90,6 +90,12 @@ module.exports = (procedure) => {
 				var ok = true;
 
                 formActions.forEach(function(actionStep) {
+					
+					// ignore empty input
+					if(!actionStep.params.value) {
+						return;
+					}
+					
 					var selector = document.querySelector(actionStep.params.selector);
 					if(!selector) {
 						ok = false;
