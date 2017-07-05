@@ -119,6 +119,12 @@ app.post('/upload', multipartMiddleware, (req, res) => {
 	});
 });
 
+app.get('/remove', (req, res) => {
+    fs.unlink('uploads/' + req.body.fileName, function(err){
+        res.send('ok');
+    });
+});
+
 app.listen(3001, function () {
   console.log("Success! Now let's use AntPost");
 });
