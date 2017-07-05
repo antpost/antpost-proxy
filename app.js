@@ -119,8 +119,8 @@ app.post('/upload', multipartMiddleware, (req, res) => {
 	});
 });
 
-app.get('/remove', (req, res) => {
-    fs.unlink('uploads/' + req.body.fileName, function(err){
+app.post('/remove', multipartMiddleware, (req, res) => {
+    fs.unlink('uploads/' + req.body.fileNames, function(err){
         res.send('ok');
     });
 });
