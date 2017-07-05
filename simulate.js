@@ -4,6 +4,14 @@
 
 const phantom = require('phantom');
 
+const actionType = {
+    accessUrl: 1,
+    input: 2,
+    click: 3,
+    submit: 4,
+    upload: 5
+};
+
 /**
  * add cookies to page
  * @param page
@@ -27,6 +35,30 @@ const addCookies = (page, cookies) => {
         })
     });
 };
+
+function evaluateInput(actionStep) {
+    var selector = document.querySelector(actionStep.params.selector);
+    if(!selector) {
+        return false;
+    }
+
+    if(actionStep.params.value) {
+        selector.value = actionStep.params.value;
+    }
+
+    return true;
+}
+
+function evaluateSumit(actionStep) {
+    var selector = document.querySelector(actionStep.params.selector);
+    if(!selector) {
+        return false;
+    }
+
+    selector.submit();
+
+    return true;
+}
 
 module.exports = (procedure) => {
 
@@ -79,44 +111,29 @@ module.exports = (procedure) => {
 
         if(status === 'success') {
             step++;
-            var finished = await page.invokeMethod('evaluate', function(formActions) {
-                var actionType = {
-                    accessUrl: 1,
-                    input: 2,
-                    click: 3,
-                    submit: 4
-                };
-				
-				var ok = true;
 
-                formActions.forEach(function(actionStep) {
-					
-					var selector = document.querySelector(actionStep.params.selector);
-					if(!selector) {
-						ok = false;
-						return;
-					}
-					
-                    switch (actionStep.action) {
-                        case actionType.input:
-                            // ignore empty input
-                            if(actionStep.params.value) {
-                                selector.value = actionStep.params.value;
-                            }
-                            break;
-                        case actionType.submit:
-                            selector.submit();
-                            break;
-                    }
-                });
-				
-				return ok;
-            }, procedure.formActions);
-			
-			if(!finished) {
-				reject("Failed!");
-				await instance.exit();
-			}
+            for(let i = 0; i < procedure.formActions.length; i ++) {
+                let actionStep = procedure.formActions[i];
+                let ok = true;
+
+                switch (actionStep.action) {
+                    case actionType.input:
+                        ok = await page.invokeMethod('evaluate', evaluateInput, actionStep);
+                        break;
+                    case actionType.upload:
+                        await page.uploadFile(actionStep.params.selector, 'uploads/' + actionStep.params.value);
+                        break;
+                    case actionType.submit:
+                        ok = await page.invokeMethod('evaluate', evaluateSumit, actionStep);
+                        break;
+                }
+
+                if(!ok) {
+                    reject("Failed!");
+                    await instance.exit();
+                    break;
+                }
+            }
         }
 
     });
