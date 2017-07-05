@@ -3,6 +3,9 @@ const app = express();
 const request = require('request-promise');
 const bodyParser = require('body-parser');
 const simulate = require('./simulate');
+const fs = require('fs');
+const multipart  = require('connect-multiparty');
+const multipartMiddleware = multipart();
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({
@@ -11,7 +14,7 @@ app.use(bodyParser.urlencoded({
 
 const allowCrossDomain = (req, res, next) => {
 	// Website you wish to allow to connect
-	res.setHeader('Access-Control-Allow-Origin', '*');
+	res.setHeader('Access-Control-Allow-Origin', 'http://localhost:3000');
 
 	// Request methods you wish to allow
 	res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, PATCH, DELETE');
@@ -74,6 +77,45 @@ app.post('/simulate', (req, res) => {
         	status: 1,
 			data: error
 		});
+	});
+});
+
+app.post('/upload', multipartMiddleware, (req, res) => {
+	var file = req.files.files;
+
+	// Tên file
+	var originalFilename = file.name;
+
+	// File type
+	var fileType = file.type.split('/')[1];
+
+	// File size
+	var fileSize = file.size;
+
+	// Đường dẫn lưu ảnh
+	var pathUpload = 'uploads/' + originalFilename;
+
+	function checkDirectorySync(directory) {
+		try {
+			fs.statSync(directory);
+		} catch(e) {
+			fs.mkdirSync(directory);
+		}
+	}
+
+	checkDirectorySync('uploads');
+
+	// Đọc nội dung file tmp
+	// nếu không có lỗi thì ghi file vào ổ cứng
+	fs.readFile(file.path, function(err, data) {
+		if(!err) {
+			fs.writeFile(pathUpload, data, function() {
+				// Return anh vua upload
+				res.send(originalFilename);
+				return;
+			});
+
+		}
 	});
 });
 
