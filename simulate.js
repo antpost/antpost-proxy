@@ -85,7 +85,8 @@ module.exports = (procedure) => {
                     let cookies = await page.cookies();
                     procedure.responseElement = procedure.responseElement || 'body';
                     let content = await page.invokeMethod('evaluate', function (element) {
-                        return document.querySelector(element).innerHTML;
+                        var selector = document.querySelector(element);
+                        return selector ? selector.innerHTML : null;
                     }, procedure.responseElement);
 
                     resolve({
