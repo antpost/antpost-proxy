@@ -39,6 +39,7 @@ app.get('/', function (req, res) {
 app.post('/fblogin', function (req, res) {
 	const options = {
 		method: 'POST',
+        rejectUnauthorized: false,
 		uri: 'https://api.facebook.com/restserver.php',
 		form: req.body,
 		json: true
@@ -54,6 +55,7 @@ app.post('/fblogin', function (req, res) {
 app.post('/post', function (req, res) {
 	const options = {
 		method: req.body.method,
+        rejectUnauthorized: false,
 		uri: req.body.api,
 		qs: req.body.data,
 		json: true

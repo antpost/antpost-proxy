@@ -63,8 +63,11 @@ function evaluateSumit(actionStep) {
 module.exports = (procedure) => {
 
     return new Promise(async (resolve, reject) => {
+        var log = console.log;
+        var nolog = function() {};
         const instance = await phantom.create(['--ignore-ssl-errors=yes', '--load-images=no'], {
-            phantomPath: 'phantomjs.exe'
+            phantomPath: 'phantomjs.exe',
+            logger: { warn: log, debug: nolog, error: log, info: log }
         });
         const page = await instance.createPage();
 
@@ -77,10 +80,14 @@ module.exports = (procedure) => {
         await page.on("onLoadFinished", async function(status) {
             //console.log(`Load Finished ${status}`);
 
-            if(step == 2) {
-                if(currentUrl.indexOf(procedure.completeRule.finalUrl) >= 0) {
+            if(step == 2 || procedure.formActions.length == 0) {
+                if(!procedure.completeRule || currentUrl.indexOf(procedure.completeRule.finalUrl) >= 0) {
                     let cookies = await page.cookies();
-					const content = await page.property('content');
+                    procedure.responseElement = procedure.responseElement || 'body';
+                    let content = await page.invokeMethod('evaluate', function (element) {
+                        return document.querySelector(element).innerHTML;
+                    }, procedure.responseElement);
+
                     resolve({
 						cookies: cookies,
 						content: content
