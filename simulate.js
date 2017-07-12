@@ -42,9 +42,9 @@ function evaluateInput(actionStep) {
         return false;
     }
 
-    var event = document.createEvent('MouseEvents');
-    event.initMouseEvent('click', true, true, window, 0, 0, 0, 0, 0, false, false, false, false, 0, null);
-    selector.dispatchEvent(event);
+    if(actionStep.params.value) {
+        selector.value = actionStep.params.value;
+    }
 
     return true;
 }
@@ -55,9 +55,9 @@ function evaluateClick(actionStep) {
         return false;
     }
 
-    if(actionStep.params.value) {
-        selector.value = actionStep.params.value;
-    }
+    var event = document.createEvent('MouseEvents');
+    event.initMouseEvent('click', true, true, window, 0, 0, 0, 0, 0, false, false, false, false, 0, null);
+    selector.dispatchEvent(event);
 
     return true;
 }
@@ -163,7 +163,7 @@ module.exports = (procedure) => {
                 resolve({});
 
                 setTimeout(async () => {
-                    await page.render('capture.png');
+                    //await page.render('capture.png');
                     await instance.exit();
                 }, 2000);
             }
