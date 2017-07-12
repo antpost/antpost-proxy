@@ -42,6 +42,19 @@ function evaluateInput(actionStep) {
         return false;
     }
 
+    var event = document.createEvent('MouseEvents');
+    event.initMouseEvent('click', true, true, window, 0, 0, 0, 0, 0, false, false, false, false, 0, null);
+    selector.dispatchEvent(event);
+
+    return true;
+}
+
+function evaluateClick(actionStep) {
+    var selector = document.querySelector(actionStep.params.selector);
+    if(!selector) {
+        return false;
+    }
+
     if(actionStep.params.value) {
         selector.value = actionStep.params.value;
     }
@@ -127,6 +140,9 @@ module.exports = (procedure) => {
                     case actionType.input:
                         ok = await page.invokeMethod('evaluate', evaluateInput, actionStep);
                         break;
+                    case actionType.click:
+                        ok = await page.invokeMethod('evaluate', evaluateClick, actionStep);
+                        break;
                     case actionType.upload:
                         await page.uploadFile(actionStep.params.selector, 'uploads/' + actionStep.params.value);
                         break;
@@ -140,6 +156,15 @@ module.exports = (procedure) => {
                     await instance.exit();
                     break;
                 }
+            }
+
+            if(!procedure.completeRule && procedure.formActions.length > 0) {
+                resolve({});
+
+                setTimeout(async () => {
+                    await page.render('capture.png');
+                    await instance.exit();
+                }, 2000);
             }
         }
 
