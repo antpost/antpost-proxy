@@ -31,6 +31,7 @@ const allowCrossDomain = (req, res, next) => {
 };
 
 app.use(allowCrossDomain);
+app.use('/static', express.static('uploads'));// you can access image
 
 app.get('/', function (req, res) {
 	res.send("Success! Now let's use AntPost");
