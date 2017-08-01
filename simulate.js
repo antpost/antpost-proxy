@@ -36,41 +36,88 @@ const addCookies = (page, cookies) => {
     });
 };
 
+const exitPhantomInstance = (instance, timeoutId) => {
+    if(timeoutId === null) {
+        timeoutId = setTimeout(async() => {
+            try {
+                await instance.exit();
+            } catch (e) {
+                console.error(e);
+            }
+        }, 2000);
+    }
+
+    return timeoutId;
+};
+
 function evaluateInput(actionStep) {
-    var selector = document.querySelector(actionStep.params.selector);
-    if(!selector) {
-        return false;
-    }
 
-    if(actionStep.params.value) {
-        selector.value = actionStep.params.value;
-    }
+    try {
+        var selector = document.querySelector(actionStep.params.selector);
+        if(!selector) {
+            return false;
+        }
 
-    return true;
+        if(actionStep.params.value) {
+            selector.value = actionStep.params.value;
+        }
+
+        return {
+            status: true
+        };
+    }
+    catch(err) {
+        return {
+            status: false,
+            message: err.message
+        }
+    }
 }
 
 function evaluateClick(actionStep) {
-    var selector = document.querySelector(actionStep.params.selector);
-    if(!selector) {
-        return false;
+
+    try {
+        var selector = document.querySelector(actionStep.params.selector);
+        if(!selector) {
+            return false;
+        }
+
+        var event = document.createEvent('MouseEvents');
+        event.initMouseEvent('click', true, true, window, 0, 0, 0, 0, 0, false, false, false, false, 0, null);
+        selector.dispatchEvent(event);
+
+        return {
+            status: true
+        };
     }
-
-    var event = document.createEvent('MouseEvents');
-    event.initMouseEvent('click', true, true, window, 0, 0, 0, 0, 0, false, false, false, false, 0, null);
-    selector.dispatchEvent(event);
-
-    return true;
+    catch(err) {
+        return {
+            status: false,
+            message: err.message
+        }
+    }
 }
 
 function evaluateSumit(actionStep) {
-    var selector = document.querySelector(actionStep.params.selector);
-    if(!selector) {
-        return false;
+
+    try {
+        var selector = document.querySelector(actionStep.params.selector);
+        if(!selector) {
+            return false;
+        }
+
+        selector.submit();
+
+        return {
+            status: true
+        };
     }
-
-    selector.submit();
-
-    return true;
+    catch(err) {
+        return {
+            status: false,
+            message: err.message
+        }
+    }
 }
 
 module.exports = (procedure) => {
@@ -89,9 +136,15 @@ module.exports = (procedure) => {
         });*/
         let step = 0;
         let currentUrl = '';
+        let timeoutId = null;
 
         await page.on("onLoadFinished", async function(status) {
             //console.log(`Load Finished ${status}`);
+            if(status == 'fail') {
+                reject("Can not access url" + currentUrl);
+                timeoutId = exitPhantomInstance(instance, timeoutId);
+                return;
+            }
 
             if(step == 2 || procedure.formActions.length == 0) {
                 if(!procedure.completeRule || currentUrl.indexOf(procedure.completeRule.finalUrl) >= 0) {
@@ -99,7 +152,7 @@ module.exports = (procedure) => {
                     procedure.responseElement = procedure.responseElement || 'body';
                     let content = await page.invokeMethod('evaluate', function (element) {
                         var selector = document.querySelector(element);
-                        return selector ? selector.innerHTML : null;
+                        return selector ? selector.outerHTML : null;
                     }, procedure.responseElement);
 
                     resolve({
@@ -108,53 +161,52 @@ module.exports = (procedure) => {
 					});
                 } else {
                     //console.log("Failed!");
-                    reject("Failed!");
+                    reject("Final url is not " + procedure.completeRule.finalUrl);
                 }
 
-                setTimeout(async () => {
-                    //await page.render('capture.png');
-                    await instance.exit();
-                }, 2000);
+                timeoutId = exitPhantomInstance(instance, timeoutId);
             }
 
             step++;
         });
 
         await page.on("onUrlChanged", function(targetUrl) {
-            console.log('New URL: ' + targetUrl);
+            if(targetUrl != 'about:blank') {
+                console.log('New URL: ' + targetUrl);
+            }
             currentUrl = targetUrl;
         });
 
         await addCookies(page, procedure.requestAction.params.cookies);
 
         const status = await page.open(procedure.requestAction.params.url);
-        //await page.render('post.png');
 
         if(status === 'success') {
             step++;
 
             for(let i = 0; i < procedure.formActions.length; i ++) {
                 let actionStep = procedure.formActions[i];
-                let ok = true;
+                let res = {status: true};
 
                 switch (actionStep.action) {
                     case actionType.input:
-                        ok = await page.invokeMethod('evaluate', evaluateInput, actionStep);
+                        res = await page.invokeMethod('evaluate', evaluateInput, actionStep);
                         break;
                     case actionType.click:
-                        ok = await page.invokeMethod('evaluate', evaluateClick, actionStep);
+                        res = await page.invokeMethod('evaluate', evaluateClick, actionStep);
                         break;
                     case actionType.upload:
                         await page.uploadFile(actionStep.params.selector, 'uploads/' + actionStep.params.value);
                         break;
                     case actionType.submit:
-                        ok = await page.invokeMethod('evaluate', evaluateSumit, actionStep);
+                        res = await page.invokeMethod('evaluate', evaluateSumit, actionStep);
                         break;
                 }
 
-                if(!ok) {
-                    reject("Failed!");
-                    await instance.exit();
+                if(!res.status) {
+                    console.log(res.message);
+                    reject(res.message);
+                    timeoutId = exitPhantomInstance(instance, timeoutId);
                     break;
                 }
             }
@@ -162,10 +214,7 @@ module.exports = (procedure) => {
             if(!procedure.completeRule && procedure.formActions.length > 0) {
                 resolve({});
 
-                setTimeout(async () => {
-                    //await page.render('capture.png');
-                    await instance.exit();
-                }, 2000);
+                timeoutId = exitPhantomInstance(instance, timeoutId);
             }
         }
 
