@@ -129,7 +129,7 @@ app.post('/remove', multipartMiddleware, (req, res) => {
 });
 
 app.get('/phone', function (req, res) {
-    const cookieStr = 'datr=c3vcWX2KyLtxgURCzmE7ceVr; sb=c3vcWb-gUMEbX4QxNssENXUe; pl=n; act=1507621874948%2F8; c_user=100016523881582; xs=18%3AO4a2_CRCKqcR3g%3A2%3A1507621798%3A6501%3A14064; fr=0ec8gCEFCkd5lhia5.AWW0wdPfndPtGdhePeutMrftvOE.BZ3Htz.NZ.AAA.0.0.BZ3Im8.AWWfZPda; dpr=1; presence=EDvF3EtimeF1507628863EuserFA21B16523881582A2EstateFDutF1507628863784CEchFDp_5f1B16523881582F2CC; wd=1600x769;'
+    const cookieStr = 'dpr=1; wd=1600x769; datr=sp3cWUdsKvUVS1wjE3W7xOSp; sb=vbLcWbc_-hj_TngSX4BGQcCI; c_user=100016523881582; xs=1%3A-yj4-dcu9PLbjg%3A2%3A1507635928%3A6501%3A14064; fr=0qBqg1V3itONpbGxT.AWXzqcSqm2hCqSUEmaLIUCOsGSM.BZ3LK9.Qt.AAA.0.0.BZ3LLY.AWWO8ss9; pl=n;';
 
 	// Put cookie in an jar which can be used across multiple requests
     let cookiejar = request.jar();
@@ -137,9 +137,11 @@ app.get('/phone', function (req, res) {
 	// ...all requests to https://api.mydomain.com will include the cookie
 
     let options = {
+        method: "GET",
+        rejectUnauthorized: false,
         uri: 'https://mbasic.facebook.com/search/?search=people&search_source=search_bar&query=01656113560',
         // resolveWithFullResponse: true,
-		// jar: cookiejar, // Tells rp to include cookies in jar that match uri
+		jar: cookiejar, // Tells rp to include cookies in jar that match uri
         headers: {
             'User-Agent': 'Mozilla/5.0 (Windows NT 6.1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2228.0 Safari/537.36'
         }
