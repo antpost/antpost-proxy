@@ -129,7 +129,7 @@ app.post('/remove', multipartMiddleware, (req, res) => {
 });
 
 app.get('/phone', function (req, res) {
-    const cookieStr = 'dpr=1; wd=1600x769; datr=sp3cWUdsKvUVS1wjE3W7xOSp; sb=vbLcWbc_-hj_TngSX4BGQcCI; c_user=100016523881582; xs=1%3A-yj4-dcu9PLbjg%3A2%3A1507635928%3A6501%3A14064; fr=0qBqg1V3itONpbGxT.AWXzqcSqm2hCqSUEmaLIUCOsGSM.BZ3LK9.Qt.AAA.0.0.BZ3LLY.AWWO8ss9; pl=n;';
+    const cookieStr = 'datr=whJ7WY0RTrSJs4RcmtrvM5wu; locale=vi_VN; dpr=1; sb=1hN7Wa4SnXj215MImoea-JB8; c_user=100016523881582; xs=8%3ACGHfKblVkhnO2g%3A2%3A1507800063%3A6501%3A13938; fr=09JVQJG3U9cvuyqUX.AWU6edtCzqW0jnmz7piubW8tr4g.BZexPW.r9.AAA.0.0.BZ3zP_.AWVp9KLh; pl=n; wd=1920x949; presence=EDvF3EtimeF15078B64EuserFA21B16523881582A2EstateFDutF15078B64595CEchFDp_5f1B16523881582F0CC; ';
 
 	// Put cookie in an jar which can be used across multiple requests
     let cookiejar = request.jar();
@@ -139,11 +139,16 @@ app.get('/phone', function (req, res) {
     let options = {
         method: "GET",
         rejectUnauthorized: false,
-        uri: 'https://mbasic.facebook.com/search/?search=people&search_source=search_bar&query=01656113560',
+        // uri: 'https://mbasic.facebook.com/search/?search=people&search_source=search_bar&query=01656113560',
+        uri: 'https://www.facebook.com/search/top/?q=01656113560',
         // resolveWithFullResponse: true,
-		jar: cookiejar, // Tells rp to include cookies in jar that match uri
+		// jar: cookiejar, // Tells rp to include cookies in jar that match uri
         headers: {
-            'User-Agent': 'Mozilla/5.0 (Windows NT 6.1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2228.0 Safari/537.36'
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/61.0.3163.100 Safari/537.36',
+			'Cookie': cookieStr,
+			'Upgrade-Insecure-Requests': '1',
+			'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8',
+			'Accept-Language': 'en-US,en;q=0.8,vi;q=0.6,es;q=0.4'
         }
     };
 

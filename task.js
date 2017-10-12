@@ -3,7 +3,7 @@ const fs = require('fs');
 const jsdom = require("jsdom");
 const { JSDOM } = jsdom;
 
-const cookieStr = 'dpr=1; wd=1600x769; datr=sp3cWUdsKvUVS1wjE3W7xOSp; sb=vbLcWbc_-hj_TngSX4BGQcCI; c_user=100016523881582; xs=1%3A-yj4-dcu9PLbjg%3A2%3A1507635928%3A6501%3A14064; fr=0qBqg1V3itONpbGxT.AWXzqcSqm2hCqSUEmaLIUCOsGSM.BZ3LK9.Qt.AAA.0.0.BZ3LLY.AWWO8ss9; pl=n;';
+const cookieStr = 'datr=pyPfWV7-zxbDDfX7G2cmnWo2; locale=vi_VN; sb=pyPfWdofw3aKW3Am-BX9Z-7g; c_user=100016513052229; xs=12%3AFh5AqRrSiLgm5Q%3A2%3A1507799931%3A15299%3A13350; pl=n; fr=0CFKgdjJjPTKfsOj0.AWW5vn0i4KIB4rM9zhG0lZ9eP-E.BZ3yOn.Ju.Fnf.0.0.BZ3zN_.AWW50lmP; presence=EDvF3EtimeF15078B85EuserFA21B16513052229A2EstateFDutF15078B85137CEchFDp_5f1B16513052229F3CC; dpr=1; wd=1920x949; ';
 
 // Put cookie in an jar which can be used across multiple requests
 let cookiejar = request.jar();
@@ -14,9 +14,13 @@ const fetch = async (phone) => {
     let options = {
         uri: 'https://mbasic.facebook.com/search/?search=people&search_source=search_bar&query=' + phone,
         headers: {
-            'User-Agent': 'Mozilla/5.0 (Windows NT 6.1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2228.0 Safari/537.36'
-        },
-        jar: cookiejar // Tells rp to include cookies in jar that match uri
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/61.0.3163.100 Safari/537.36',
+            'Cookie': cookieStr,
+            'Upgrade-Insecure-Requests': '1',
+            'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8',
+            'Accept-Language': 'en-US,en;q=0.8,vi;q=0.6,es;q=0.4'
+        }
+        // jar: cookiejar // Tells rp to include cookies in jar that match uri
     };
 
     return await request(options);
